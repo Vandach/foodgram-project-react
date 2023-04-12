@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>Привет</h1>
+
+    <form acrion='{% url 'addrecipe' %}' method='post' enctype='multipart/form-data'>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type='submit'>Добавить</button>
+    </form>
+
+{% endblock %}

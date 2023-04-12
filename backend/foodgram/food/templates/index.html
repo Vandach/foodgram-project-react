@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+{% for m in menu %}
+  <p>{{m.title}}</p>
+{% endfor %}
+
+
+    <h1>Привет</h1>
+    <ul>
+    {% for r in recipies %}
+    
+    <li>
+      <p>Категория: {{r.cat}}</p>
+      {% if r.photo %}
+      <p><img class='img-article-left thumb' src='{{r.photo.url}}'></p><br><br>
+      {% endif %}
+      <h2><a href= {{ r.get_absolute_url }}>{{r.title}}</a></h2>
+      <p>{{r.content}}</p>
+    </li>
+    <hr>
+    {% endfor %}
+  </ul>
+{% endblock %}

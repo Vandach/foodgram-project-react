@@ -1,0 +1,116 @@
+{% load static %}
+{% load food_tags %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link type="text/css" href="{% static 'food/css/styles.css' %}" rel="stylesheet" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.png" />
+    <link type="text/css" href="{% static 'css/main.859407f1.chunk.css' %}" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000" />
+    <meta
+      name="description"
+      content="Продуктовый помощник"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>{{title}}</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+    {% if request.user.is_authenticated %}
+    <h1>{{user.username}} | <a href="{% url 'logout' %}"> Выйти </a></li>
+    {% else %}
+    <h1><a href="{% url 'register' %}"> Регистрация </a></h1>
+    <h1><a href="{% url 'login' %}"> Логин </a></h1>
+    {% endif %}
+    <h1><a href="{% url 'home' %}"> На главную </a></h1>
+    <h1><a href="{% url 'addrecipe' %}"> Добавить рецепт </a></h1>
+
+<td valid="top" class="left-chapter">
+
+<ul id="leftchapters">
+
+{% if cat_selected == 0 %}
+
+<li class="selected">Все категории</li>
+
+{% else %}
+
+<li><a href="{% url 'home' %}">Все категории</a></li>
+
+{% endif %}
+
+{% comment %} {% show_categories 'name' cat_selected %} {% endcomment %}
+
+{% for c in cats %}
+{% if c.recipe__count > 0 %}
+  {% if c.pk == cat_selected %}
+    <li class='selected'>{{c.name}}</li>
+  
+  {% else %}
+    <li><a href='{{ c.get_absolute_url }}'>{{c.name}}</a></li>
+  {% endif %}
+  {% endif %}
+{% endfor %}    
+{% block content %}
+
+{% endblock content %}
+{% if page_obj.has_other_pages %}
+<nav class='list-pages'>
+  <ul>
+
+    {% if page_obj.has_previous %}
+    <li class="page-num" >
+      <a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
+    </li>
+    {% endif %}
+
+    {% for p in paginator.page_range %}
+    {% if page_obj.number == p %}
+    <li class="page-num page-num-selected">
+      {{ p }}
+    </li>
+
+    {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
+
+    <li class='page-num'>
+      <a href='?page={{ p }}'>{{ p }}</a>
+    </li>
+    {% endif %}
+    {% endfor %} 
+    {% if page_obj.has_next %}
+    <li class="page-num" >
+      <a href="?page={{ page_obj.next_page_number }}">&gt;</a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+  </body>
+</html>
