@@ -22,7 +22,8 @@ from django.urls import include, path
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('', include('food.urls')),
-    # path('users/', include('users.urls')),
+    path('users/', include('users.urls')),
+    path('api/', include('api.urls')),
 ]
 
 if settings.DEBUG:
