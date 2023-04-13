@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 
 from .models import Recipe
@@ -12,7 +12,7 @@ class AddRecipeForm(forms.ModelForm):
 
     class Meta:
         model = Recipe
-        fields = ['title', 'slug', 'content', 'photo', 'is_published', 'cat']
+        fields = '__all__'
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-input'}),
             'content': forms.Textarea(attrs={'cols': 60, 'rows': 10}),
@@ -24,16 +24,6 @@ class AddRecipeForm(forms.ModelForm):
             raise forms.ValidationError('Длина превышает 200 символов')
 
         return title
-
-
-"""class AddPostForm(forms.ModelForm):
-    title = forms.CharField(max_length=250, label='Название')
-    slug = forms.SlugField(max_length=150)
-    content = forms.CharField(
-        widget=forms.Textarea(attrs={'cols': 60, 'rows': 10})
-        )
-    is_published = forms.BooleanField(required=False, initial=True)
-    cat = forms.ModelChoiceField(queryset=Category.objects.all())"""
 
 
 class RegisterUserForm(UserCreationForm):

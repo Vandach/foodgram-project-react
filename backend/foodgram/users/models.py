@@ -1,8 +1,21 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+from django.contrib.auth.models import UserManager
+from django.contrib.auth.hashers import make_password
+from django.db.models import Q
+
+class CustomUserManager(UserManager):
+
+    def get_by_natural_key(self, username):
+        return self.get(
+            Q(**{self.model.USERNAME_FIELD: username}) |
+            Q(**{self.model.EMAIL_FIELD: username})
+        )
+
 
 class User(AbstractUser):
+    # objects = CustomUserManager()
     USER = 'user'
     MODERATOR = 'moderator'
     ADMIN = 'admin'
@@ -15,6 +28,11 @@ class User(AbstractUser):
         'Email', max_length=254, unique=True, null=False, blank=False
     )
     is_subscribed = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        self.password = make_password(self.password)
+        super(User, self).save(*args, **kwargs)
+
     @property
     def is_admin(self):
         return (
@@ -22,6 +40,7 @@ class User(AbstractUser):
             or self.is_superuser
             or self.is_staff
         )
+
     @property
     def is_moderator(self):
         return self.role == self.MODERATOR
