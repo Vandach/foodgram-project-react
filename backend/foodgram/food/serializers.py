@@ -2,11 +2,6 @@ from rest_framework import serializers
 from .models import Recipe, Enrollment
 
 
-# "id": 0,
-# "name": "Картофель отварной",
-# "measurement_unit": "г",
-# "amount": 1
-
 class EnrollmentSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source='ingredients.name')
     measurement_unit = serializers.ReadOnlyField(
