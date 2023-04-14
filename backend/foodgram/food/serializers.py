@@ -1,15 +1,33 @@
 from rest_framework import serializers
-from .models import Recipe
+from .models import Recipe, Enrollment
+
+
+# "id": 0,
+# "name": "Картофель отварной",
+# "measurement_unit": "г",
+# "amount": 1
+
+class EnrollmentSerializer(serializers.ModelSerializer):
+    name = serializers.ReadOnlyField(source='ingredients.name')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredients.measurement_unit'
+        )
+
+    class Meta:
+        model = Enrollment
+        fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
 class RecipeSerializer(serializers.ModelSerializer):
     tags = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
-
+    ingredients = EnrollmentSerializer(many=True, source="enrollment_set")
 
     class Meta:
         model = Recipe
-        fields = '__all__'
+        fields = ('id', 'tags', 'author', 'ingredients',
+                  'is_favorited', 'is_in_shopping_cart',
+                  'name', 'image', 'text', 'cooking_time',)
 
     def get_tags(self, obj):
         return [{

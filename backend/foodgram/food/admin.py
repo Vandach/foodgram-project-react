@@ -2,7 +2,7 @@ from django.contrib import admin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
-from .models import Enrollment, Product, Recipe, Tag
+from .models import Enrollment, Ingredients, Recipe, Tag
 
 
 class EnrollmentInline(admin.TabularInline):
@@ -12,8 +12,8 @@ class EnrollmentInline(admin.TabularInline):
 
 class RecipeAdmin(admin.ModelAdmin):
     inlines = [EnrollmentInline]
-    list_display = ('id', 'title')
-    list_display_links = ('id', 'title')
+    list_display = ('id', 'name')
+    list_display_links = ('id', 'name')
     search_fields = ('title', 'content')
     # list_filter = ('time_create',)
     # prepopulated_fields = {'slug': ('title',)}
@@ -24,14 +24,14 @@ admin.site.register(Recipe, RecipeAdmin)
 
 class ProductResource(resources.ModelResource):
     class Meta:
-        model = Product
+        model = Ingredients
 
 
 class ProductAdmin(ImportExportModelAdmin):
     resource_class = ProductResource
 
 
-admin.site.register(Product, ProductAdmin)
+admin.site.register(Ingredients, ProductAdmin)
 
 
 class TagAdmin(admin.ModelAdmin):

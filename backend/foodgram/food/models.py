@@ -1,7 +1,4 @@
-from datetime import timedelta
-
 from colorfield.fields import ColorField
-from django.contrib.auth import get_user_model
 from django.db import models
 # from ..users.models import User
 from users.models import User
@@ -26,7 +23,7 @@ class Tag(models.Model):
         return self.title
 
 
-class Product(models.Model):
+class Ingredients(models.Model):
     """Класс продукты"""
 
     name = models.CharField(
@@ -51,11 +48,11 @@ class Recipe(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Автор",
         )
-    title = models.CharField(
+    name = models.CharField(
         max_length=250, verbose_name='Название'
         )
     text = models.TextField(verbose_name="Текст")
-    photo = models.ImageField(
+    image = models.ImageField(
         null=True, blank=True, upload_to="photos/%Y/%m/%d/",
         verbose_name='Изображения'
         )
@@ -63,23 +60,25 @@ class Recipe(models.Model):
         auto_now_add=True,
         verbose_name="Дата публикации",
         )
-    products = models.ManyToManyField(Product, through="Enrollment")
+    ingredients = models.ManyToManyField(Ingredients, through="Enrollment")
     tags = models.ManyToManyField(Tag)
-    time = models.DurationField(default=timedelta)
+    cooking_time = models.IntegerField()
+    is_favorited = models.BooleanField(default=False)
+    is_in_shopping_cart = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('-pub_date',)
 
     def __str__(self) -> str:
-        return self.title[:POST_STRING_LENGTH]
+        return self.name[:POST_STRING_LENGTH]
 
 
 class Enrollment(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    products = models.ForeignKey(Product, on_delete=models.CASCADE)
-    ammount = models.CharField(
-        max_length=250, verbose_name='Количество'
-        )
+    ingredients = models.ForeignKey(Ingredients, on_delete=models.CASCADE)
+    amount = models.IntegerField()
 
     def __str__(self):
-        return "{}_{}".format(self.recipe.__str__(), self.products.__str__())
+        return "{}_{}".format(
+            self.recipe.__str__(), self.ingredients.__str__(),
+            )

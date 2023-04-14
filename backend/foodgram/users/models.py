@@ -5,6 +5,7 @@ from django.contrib.auth.models import UserManager
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q
 
+
 class CustomUserManager(UserManager):
 
     def get_by_natural_key(self, username):
