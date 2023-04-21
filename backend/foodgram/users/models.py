@@ -1,8 +1,5 @@
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
-from django.contrib.auth.models import AbstractUser
-
-from django.contrib.auth.models import UserManager
-from django.contrib.auth.hashers import make_password
 from django.db.models import Q
 
 
@@ -30,9 +27,9 @@ class User(AbstractUser):
     )
     is_subscribed = models.BooleanField(default=False)
 
-    def save(self, *args, **kwargs):
-        self.password = make_password(self.password)
-        super(User, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     self.password = make_password(self.password)
+    #     super(User, self).save(*args, **kwargs)
 
     @property
     def is_admin(self):

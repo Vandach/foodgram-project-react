@@ -12,7 +12,7 @@ from .constants import POST_STRING_LENGTH
 class Tag(models.Model):
     """Класс тагов"""
 
-    title = models.CharField(
+    name = models.CharField(
         max_length=200,
         verbose_name="Название тега",
     )
@@ -20,7 +20,7 @@ class Tag(models.Model):
     slug = models.SlugField(max_length=150, db_index=True, verbose_name='URL')
 
     def __str__(self):
-        return self.title
+        return self.name
 
 
 class Ingredients(models.Model):
