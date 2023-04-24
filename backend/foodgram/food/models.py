@@ -23,7 +23,7 @@ class Tag(models.Model):
         return self.name
 
 
-class Ingredients(models.Model):
+class Ingredient(models.Model):
     """Класс продукты"""
 
     name = models.CharField(
@@ -35,6 +35,7 @@ class Ingredients(models.Model):
         verbose_name="Ед. измирения",
         blank=True,
     )
+    # amount = models.IntegerField()
 
     def __str__(self):
         return f"{self.name}, {self.measurement_unit}"
@@ -60,7 +61,9 @@ class Recipe(models.Model):
         auto_now_add=True,
         verbose_name="Дата публикации",
         )
-    ingredients = models.ManyToManyField(Ingredients, through="Enrollment")
+    ingredients = models.ManyToManyField(
+        Ingredient, through="RecipeIngredients"
+        )
     tags = models.ManyToManyField(Tag)
     cooking_time = models.IntegerField()
     is_favorited = models.BooleanField(default=False)
@@ -73,12 +76,10 @@ class Recipe(models.Model):
         return self.name[:POST_STRING_LENGTH]
 
 
-class Enrollment(models.Model):
+class RecipeIngredients(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredients = models.ForeignKey(Ingredients, on_delete=models.CASCADE)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.PROTECT)
     amount = models.IntegerField()
 
     def __str__(self):
-        return "{}_{}".format(
-            self.recipe.__str__(), self.ingredients.__str__(),
-            )
+        return f'{self.recipe} {self.ingredient}'

@@ -1,9 +1,10 @@
 from typing import Any
 from requests import Request
 from rest_framework.response import Response
-from .models import Recipe, User, Tag
+from .models import Recipe, User, Tag, Ingredient, RecipeIngredients
 from .serializers import (RecipeSerializer, RecipeCreateSerializer,
-                          TagSerializer)
+                          TagSerializer, IngredientSerializer,
+                          RecipeIngredientsSerializer)
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -27,14 +28,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeSerializer
         return RecipeCreateSerializer
 
-    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(author=User.objects.get(username=request.user))
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    # def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    #     serializer = self.get_serializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save(author=User.objects.get(username=request.user))
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class TagsViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
-    permission_classes = (IsAuthenticated, )
     serializer_class = TagSerializer
+
+
+class IngredientViewSet(viewsets.ModelViewSet):
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+
+
+class RecipeIngredientsViewSet(viewsets.ModelViewSet):
+    queryset = RecipeIngredients.objects.all()
+    serializer_class = RecipeIngredientsSerializer

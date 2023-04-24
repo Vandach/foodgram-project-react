@@ -2,11 +2,11 @@ from django.contrib import admin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
-from .models import Enrollment, Ingredients, Recipe, Tag
+from .models import RecipeIngredients, Ingredient, Recipe, Tag
 
 
 class EnrollmentInline(admin.TabularInline):
-    model = Enrollment
+    model = RecipeIngredients
     extra = 1
 
 
@@ -24,14 +24,14 @@ admin.site.register(Recipe, RecipeAdmin)
 
 class ProductResource(resources.ModelResource):
     class Meta:
-        model = Ingredients
+        model = Ingredient
 
 
 class ProductAdmin(ImportExportModelAdmin):
     resource_class = ProductResource
 
 
-admin.site.register(Ingredients, ProductAdmin)
+admin.site.register(Ingredient, ProductAdmin)
 
 
 class TagAdmin(admin.ModelAdmin):
