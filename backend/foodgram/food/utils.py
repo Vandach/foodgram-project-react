@@ -1,26 +1,28 @@
-# from .models import Category
-# from django.db.models import Count
+from django.db.models import F, Sum
 
-# menu = [
-#         {'title': "первая", 'url_name': 'first'},
-#         {'title': "вторая", 'url_name': 'second'},
-#         {'title': "третья", 'url_name': 'third'},
-# ]
+from .models import RecipeIngredients
+
+def recipe_ingredient_create(ingredients_data, models, recipe):
+    bulk_create_data = (
+                    models(
+                        recipe=recipe,
+                        ingredient=ingredient_data['ingredient'],
+                        amount=ingredient_data['amount']
+                        )
+                    for ingredient_data in ingredients_data
+    )
+    models.objects.bulk_create(bulk_create_data)
 
 
-# class DataMixin:
-#     paginate_by = 3
+def get_list_ingredients(user):
+    """
+    Cуммирование позиций из разных рецептов.
+    """
 
-#     def get_user_context(self, **kwargs):
-#         context = kwargs
-#         cats = Category.objects.annotate(Count('recipe'))
-#         user_menu = menu.copy()
-
-#         if not self.request.user.is_authenticated:
-#             user_menu.pop(1)
-
-#         context['menu'] = user_menu
-#         context['cats'] = cats
-#         if 'cat_selected' not in context:
-#             context['cat_selected'] = 0
-#         return context
+    ingredients = RecipeIngredients.objects.filter(
+        recipe__shopping_recipe__user=user).values(
+        name=F('ingredient__name'),
+        measurement_unit=F('ingredient__measurement_unit')
+    ).annotate(amount=Sum('amount')).values_list(
+        'ingredient__name', 'amount', 'ingredient__measurement_unit')
+    return ingredients
