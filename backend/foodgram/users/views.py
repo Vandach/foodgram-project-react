@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -20,6 +21,20 @@ class UserViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     queryset = User.objects.all()
 
+    @action(
+        detail=False,
+        methods=['get', 'patch'],
+    )
+    def subscriptions(self, request):
+        self.get_serializer
+        queryset = User.objects.filter(subscribing__user=request.user)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_subscribtion_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_subscribtion_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def get_serializer_class(self):
         if self.action in ('retrieve', 'list'):
             return UserSerializer
@@ -40,6 +55,7 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(role=user.role, partial=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
 
 
 class UpdatePassword(APIView):

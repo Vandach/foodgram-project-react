@@ -60,6 +60,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
     tags = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
+    is_favorited = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Recipe
@@ -90,6 +91,12 @@ class RecipeSerializer(serializers.ModelSerializer):
         if user.is_anonymous:
             return False
         return user.shopping.filter(recipe=obj).exists()
+    
+    def get_is_favorited(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return user.favorite.filter(recipe=obj).exists()
     
 
 class RecipeIngredientsCreateSerializer(WritableNestedModelSerializer,
@@ -206,6 +213,12 @@ class RecipeCreateSerializer(WritableNestedModelSerializer,
         if user.is_anonymous:
             return False
         return user.shopping.filter(recipe=obj).exists()
+    
+    def get_is_favorited(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return user.favorite.filter(recipe=obj).exists()
 
     def validate_ingredients(self, value):
         if not value:
@@ -257,3 +270,16 @@ class RecipeCreateSerializer(WritableNestedModelSerializer,
             tag_list.append(serialized_tag)
         repr['tags'] = tag_list
         return repr
+
+
+class RecipeSecondSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'name',
+            'image',
+            'cooking_time'
+        )

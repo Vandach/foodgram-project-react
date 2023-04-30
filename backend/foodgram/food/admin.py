@@ -2,7 +2,9 @@ from django.contrib import admin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
-from .models import RecipeIngredients, Ingredient, Recipe, Tag, ShoppingCart
+from .models import (RecipeIngredients, Ingredient,
+                     Recipe, Tag, ShoppingCart, Favorite
+                     )
 
 
 class EnrollmentInline(admin.TabularInline):
@@ -50,3 +52,12 @@ class ShoppingCartAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ShoppingCart, ShoppingCartAdmin)
+
+
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'recipe')
+    list_display_links = ('id', 'user', 'recipe')
+    search_fields = ('name',)
+
+
+admin.site.register(Favorite, FavoriteAdmin)

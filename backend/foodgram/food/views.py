@@ -2,10 +2,11 @@ from typing import Any
 from django.shortcuts import get_object_or_404
 from requests import Request
 from rest_framework.response import Response
-from .models import Recipe, User, Tag, Ingredient, RecipeIngredients, ShoppingCart
+from .models import Recipe, User, Tag, Ingredient, RecipeIngredients, ShoppingCart, Favorite
 from .serializers import (RecipeSerializer, RecipeCreateSerializer,
                           TagSerializer, IngredientSerializer,
                           RecipeIngredientsSerializer, RecipeIngredients2Serializer,
+                          RecipeSecondSerializer
                         )
 from django.template.loader import render_to_string
 from datetime import datetime
@@ -39,6 +40,45 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeSerializer
         return RecipeCreateSerializer
 
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=[IsAuthenticated]
+    )
+    def shopping_cart(self, request, pk):
+        if request.method == 'POST':
+            return self.add_to(ShoppingCart, request.user, pk)
+        else:
+            return self.delete_from(ShoppingCart, request.user, pk)
+
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=[IsAuthenticated]
+    )
+    def favorite(self, request, pk):
+        if request.method == 'POST':
+            return self.add_to(Favorite, request.user, pk)
+        else:
+            return self.delete_from(Favorite, request.user, pk)
+
+    def add_to(self, model, user, pk):
+        if model.objects.filter(user=user, recipe__id=pk).exists():
+            return Response({'errors': 'Рецепт уже добавлен!'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        recipe = get_object_or_404(Recipe, id=pk)
+        model.objects.create(user=user, recipe=recipe)
+        serializer = RecipeSecondSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete_from(self, model, user, pk):
+        obj = model.objects.filter(user=user, recipe__id=pk)
+        if obj.exists():
+            obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'errors': 'Рецепт уже удален!'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
 
     @action(methods=('get',), detail=False)
     def download_shopping_cart(self, request):
@@ -63,17 +103,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
                                            'filename="shopping_list.pdf"')
         page = canvas.Canvas(response)
         page.setFont('Impact', size=24)
-        page.drawString(200, 800, 'Список ингредиентов')
+        page.drawString(200, 800, 'Список покупок')
         page.setFont('Impact', size=16)
         height = 750
         for i, (name, data) in enumerate(final_list.items(), 1):
-            page.drawString(75, height, (f'<{i}> {name} - {data["amount"]}, '
+            page.drawString(75, height, (f'{i}. {name} - {data["amount"]} '
                                          f'{data["measurement_unit"]}'))
             height -= 25
         page.showPage()
         page.save()
         return response
-
 
 
 

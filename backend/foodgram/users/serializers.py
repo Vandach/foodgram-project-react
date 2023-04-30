@@ -1,8 +1,13 @@
 from rest_framework import serializers
+# from food.serializers import RecipeSecondSerializer
 from users.models import User
+from food.models import Recipe
+# from food.serializers import RecipeSecondSerializer
+from drf_extra_fields.fields import Base64ImageField
 
 
 class UserSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
@@ -15,6 +20,12 @@ class UserSerializer(serializers.ModelSerializer):
         if value == 'me':
             raise serializers.ValidationError('Недопустимый username')
         return value
+    
+    def get_is_subscribed(self, value):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return user.follower.filter(author=value).exists()
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -44,3 +55,17 @@ class ChangePasswordSerializer(serializers.Serializer):
         fields = (
             'new_password', 'current_password',
         )
+
+
+
+
+# class SubscriptionSerializer(UserSerializer):
+#     recipes = RecipeSecondSerializer(many=True)
+#     recipes_count = serializers.SerializerMethodField()
+
+#     class Meta(UserSerializer.Meta):
+#         fields = UserSerializer.Meta.fields + ('recipes', 'recipes_count',)
+
+#     def get_recipes_count(self, obj):
+#         return obj.recipes.count()
+
