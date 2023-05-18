@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import make_password
 from drf_extra_fields.fields import Base64ImageField
 from food.models import Recipe
 from rest_framework import serializers
@@ -32,7 +33,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'email', 'id', 'username', 'first_name',
-            'last_name',
+            'last_name', 'password'
         )
 
     def validate_username(self, value):
@@ -40,11 +41,13 @@ class UserCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Недопустимый username')
         return value
 
+    def validate_password(self, value):
+        password = make_password(value)
+        return password
+
 
 class ChangePasswordSerializer(serializers.Serializer):
-    """
-    Serializer for password change endpoint.
-    """
+
     new_password = serializers.CharField(required=True)
     current_password = serializers.CharField(required=True)
 

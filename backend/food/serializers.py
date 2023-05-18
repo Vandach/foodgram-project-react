@@ -1,12 +1,14 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import serializers, exceptions
-from users.serializers import UserSerializer
-from drf_writable_nested import WritableNestedModelSerializer
-from .models import Recipe, RecipeIngredients, Tag, Ingredient
-from django.core.validators import MinValueValidator
-from .utils import recipe_ingredient_create
 from collections import OrderedDict
-from drf_extra_fields.fields import Base64ImageField
+
+from django.core.validators import MinValueValidator
+from django.shortcuts import get_object_or_404
+from drf_writable_nested import WritableNestedModelSerializer
+from rest_framework import exceptions, serializers
+from users.serializers import UserSerializer
+
+from .fields import Base64ImageField
+from .models import Ingredient, Recipe, RecipeIngredients, Tag
+from .utils import recipe_ingredient_create
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -61,6 +63,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     tags = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
     is_favorited = serializers.SerializerMethodField(read_only=True)
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
@@ -99,48 +102,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return user.favorite.filter(recipe=obj).exists()
 
 
-class RecipeIngredientsCreateSerializer(WritableNestedModelSerializer,
-                                        serializers.ModelSerializer):
-    id = serializers.IntegerField(
-        source='ingredient.id'
-        )
-
-    class Meta:
-        model = RecipeIngredients
-        fields = ('id', 'amount')
-
-
-class CreateIngredientSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField()
-    amount = serializers.IntegerField()
-
-    class Meta:
-        fields = ('id', 'amount',)
-
-
-class CreateRecipeIngredientSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField()
-    amount = serializers.IntegerField()
-
-    class Meta:
-        model = RecipeIngredients
-        fields = ('id', 'amount')
-
-
-class Ingredient2RecipeSerializer(serializers.ModelSerializer):
-    recipe = serializers.PrimaryKeyRelatedField(read_only=True)
-    amount = serializers.IntegerField(write_only=True, min_value=1)
-    id = serializers.PrimaryKeyRelatedField(
-        source='ingredient',
-        queryset=Ingredient.objects.all()
-    )
-
-    class Meta:
-        model = RecipeIngredients
-        fields = ('id', 'amount', 'recipe')
-
-
-class RecipeIngredients2Serializer(serializers.ModelSerializer):
+class RecipeIngredientsSecondSerializer(serializers.ModelSerializer):
 
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(),
@@ -164,13 +126,14 @@ class RecipeIngredients2Serializer(serializers.ModelSerializer):
 class RecipeCreateSerializer(WritableNestedModelSerializer,
                              serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
-    ingredients = RecipeIngredients2Serializer(
+    ingredients = RecipeIngredientsSecondSerializer(
         source='recipeingredients_set',
         many=True)
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
         many=True
     )
+    image = Base64ImageField()
     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
     cooking_time = serializers.IntegerField(
         validators=(
@@ -219,7 +182,7 @@ class RecipeCreateSerializer(WritableNestedModelSerializer,
         for ingredient in ingredients_check:
             if ingredients_check.count(ingredient) > 1:
                 raise exceptions.ValidationError(
-                    'У рецепта не может быть два одинаковы ингридиента'
+                    'У рецепта не может быть два одинаковых ингридиента'
                 )
         return value
 

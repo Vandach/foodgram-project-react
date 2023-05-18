@@ -12,7 +12,7 @@ class Tag(models.Model):
         max_length=200,
         verbose_name="Название тега",
     )
-    color = ColorField(default='#FF0000', blank=True)
+    color = ColorField(default='#00ff00', blank=True)
     slug = models.SlugField(max_length=150, db_index=True, verbose_name='URL')
 
     def __str__(self):
@@ -31,7 +31,6 @@ class Ingredient(models.Model):
         verbose_name="Ед. измирения",
         blank=True,
     )
-    # amount = models.IntegerField()
 
     def __str__(self):
         return f"{self.name}, {self.measurement_unit}"
@@ -50,7 +49,7 @@ class Recipe(models.Model):
         )
     text = models.TextField(verbose_name="Текст")
     image = models.ImageField(
-        null=True, blank=True, upload_to="photos/%Y/%m/%d/",
+        null=True, blank=True, upload_to="food/images/",
         verbose_name='Изображения'
         )
     pub_date = models.DateTimeField(
@@ -73,6 +72,7 @@ class Recipe(models.Model):
 
 
 class RecipeIngredients(models.Model):
+    """Класс ингредиентов в рецепте"""
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient, on_delete=models.PROTECT)
     amount = models.IntegerField()
@@ -82,7 +82,7 @@ class RecipeIngredients(models.Model):
 
 
 class ShoppingCart(models.Model):
-
+    """Класс списка покупок"""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -101,7 +101,7 @@ class ShoppingCart(models.Model):
 
 
 class Favorite(models.Model):
-
+    """Класс избранного"""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

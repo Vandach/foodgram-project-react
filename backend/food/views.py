@@ -1,30 +1,29 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from .filters import IngredientFilter, RecipeFilter
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredients,
                      ShoppingCart, Tag)
+from .pagination import StandardResultsSetPagination
 from .serializers import (IngredientSerializer, RecipeCreateSerializer,
-                          RecipeIngredients2Serializer,
-                          RecipeIngredientsSerializer, RecipeSecondSerializer,
-                          RecipeSerializer, TagSerializer)
-
-
-class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 6
-    page_size_query_param = 'page_size'
+                          RecipeSecondSerializer, RecipeSerializer,
+                          TagSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """Вьюсет Рецепта"""
     pagination_class = StandardResultsSetPagination
     queryset = Recipe.objects.all()
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def get_serializer_class(self):
         if self.action in ('retrieve', 'list'):
@@ -87,14 +86,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
             else:
                 final_list[name]['amount'] += item[2]
         pdfmetrics.registerFont(
-            TTFont('Impact', 'Impact.ttf', 'UTF-8'))
+            TTFont('ImpactRegular', 'ImpactRegular.ttf', 'UTF-8'))
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = ('attachment; '
                                            'filename="shopping_list.pdf"')
         page = canvas.Canvas(response)
-        page.setFont('Impact', size=24)
+        page.setFont('ImpactRegular', size=24)
         page.drawString(200, 800, 'Список покупок')
-        page.setFont('Impact', size=16)
+        page.setFont('ImpactRegular', size=16)
         height = 750
         for i, (name, data) in enumerate(final_list.items(), 1):
             page.drawString(75, height, (f'{i}. {name} - {data["amount"]} '
@@ -106,20 +105,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class TagsViewSet(viewsets.ModelViewSet):
+    """Вьюсет Тегов"""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
-    queryset = Ingredient.objects.all()
+    """Вьюсет Ингредиентов"""
     serializer_class = IngredientSerializer
-
-
-class RecipeIngredientsViewSet(viewsets.ModelViewSet):
-    queryset = RecipeIngredients.objects.all()
-    serializer_class = RecipeIngredientsSerializer
-
-
-class test(viewsets.ModelViewSet):
-    queryset = RecipeIngredients.objects.all()
-    serializer_class = RecipeIngredients2Serializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter
+    queryset = Ingredient.objects.all()

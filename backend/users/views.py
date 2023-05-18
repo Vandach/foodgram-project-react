@@ -2,31 +2,27 @@ from django.contrib.auth.hashers import check_password
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.permissions import IsSelf
 
 from .models import Follow, User
+from .pagination import StandardResultsSetPagination
 from .serializers import (ChangePasswordSerializer, FollowSerializer,
                           SubscribeSerializer, UserCreateSerializer,
                           UserSerializer)
 
 
-class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 6
-    page_size_query_param = 'page_size'
-
-
 class UserViewSet(viewsets.ModelViewSet):
+    """Вьюсет Пользователя"""
     pagination_class = StandardResultsSetPagination
     queryset = User.objects.all()
 
     @action(
         detail=False,
         methods=['get'],
-        permission_classes=[IsAuthenticated]
+        permission_classes=[AllowAny]
     )
     def subscriptions(self, request):
 
@@ -43,7 +39,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated]
+        permission_classes=[AllowAny]
     )
     def subscribe(self, request, pk):
         if request.method == 'POST':
@@ -76,6 +72,9 @@ class UserViewSet(viewsets.ModelViewSet):
             return UserSerializer
         return UserCreateSerializer
 
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
     @action(
         detail=False,
         methods=['get', 'patch'],
@@ -84,7 +83,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def me(self, request):
         user = request.user
         if request.method == 'GET':
-            serializer = UserSerializer(user)
+            serializer = UserSerializer(user, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         serializer = self.get_serializer(user, data=request.data, partial=True)
@@ -94,9 +93,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class UpdatePassword(APIView):
-    """
-    An endpoint for changing password.
-    """
+    """Смена пароля"""
     permission_classes = (IsAuthenticated,)
 
     def get_object(self, queryset=None):

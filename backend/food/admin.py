@@ -16,6 +16,13 @@ class RecipeAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('id', 'name')
     search_fields = ('title', 'content')
+    readonly_fields = ['count_favorite']
+    list_filter = ['name', 'author', 'tags']
+    empty_value_display = '-empty-'
+
+    @admin.display(description='Добавлений в Избранное')
+    def count_favorite(self, obj):
+        return obj.favorite.count()
 
 
 admin.site.register(Recipe, RecipeAdmin)
@@ -28,6 +35,8 @@ class ProductResource(resources.ModelResource):
 
 class ProductAdmin(ImportExportModelAdmin):
     resource_class = ProductResource
+    search_fields = ('name',)
+    list_filter = ['name']
 
 
 admin.site.register(Ingredient, ProductAdmin)
