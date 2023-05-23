@@ -1,42 +1,14 @@
-from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.db.models import Q
-
-
-class CustomUserManager(UserManager):
-
-    def get_by_natural_key(self, username):
-        return self.get(
-            Q(**{self.model.USERNAME_FIELD: username}) |
-            Q(**{self.model.EMAIL_FIELD: username})
-        )
 
 
 class User(AbstractUser):
-    USER = 'user'
-    MODERATOR = 'moderator'
-    ADMIN = 'admin'
-    USER_ROLES = (
-        (USER, 'User'),
-        (MODERATOR, 'Moderator'),
-        (ADMIN, 'Admin'),
-    )
+    """Класс Пользователя"""
+
     email = models.EmailField(
         'Email', max_length=254, unique=True, null=False, blank=False
     )
     is_subscribed = models.BooleanField(default=False)
-
-    @property
-    def is_admin(self):
-        return (
-            self.role == self.ADMIN
-            or self.is_superuser
-            or self.is_staff
-        )
-
-    @property
-    def is_moderator(self):
-        return self.role == self.MODERATOR
 
     class Meta:
         verbose_name = 'Пользователь'
