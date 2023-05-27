@@ -112,17 +112,6 @@ class RecipeIngredients(models.Model):
     def __str__(self):
         return f'{self.recipe} {self.ingredient}'
 
-    def recipe_ingredient_create(ingredients_data, recipe):
-        bulk_create_data = (
-                    RecipeIngredients(
-                        recipe=recipe,
-                        ingredient=ingredient_data['ingredient'],
-                        amount=ingredient_data['amount']
-                        )
-                    for ingredient_data in ingredients_data
-        )
-        RecipeIngredients.objects.bulk_create(bulk_create_data)
-
 
 class ShoppingCart(models.Model):
     """Класс списка покупок"""

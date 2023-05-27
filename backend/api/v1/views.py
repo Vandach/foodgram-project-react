@@ -4,24 +4,26 @@ from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
-from users.models import Follow, User
+from users.models import User
 from food.models import (Favorite, Ingredient, Recipe, RecipeIngredients,
                          ShoppingCart, Tag)
-from .permissions import IsSelf
+from .permissions import IsSelf, IsAuthorOrReadOnly
 from .pagination import StandardResultsSetPagination
-from .serializers import (ChangePasswordSerializer, FollowSerializer,
-                          SubscribeSerializer, UserCreateSerializer,
+from .serializers import (ChangePasswordSerializer, UserCreateSerializer,
                           UserSerializer, IngredientSerializer,
                           RecipeCreateSerializer,
                           RecipeSerializer, TagSerializer,
-                          FavoriteSerializer, ShoppingCartSerializer)
+                          FavoriteSerializer, ShoppingCartSerializer,
+                          SubscriptionSerializer,
+                          SubscriptionInfoSerializer
+                          )
 from .filters import IngredientFilter, RecipeFilter
 
 
@@ -30,60 +32,49 @@ class UserViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = (AllowAny,)
 
-    @action(
-        detail=False,
-        methods=['get'],
-        permission_classes=[AllowAny]
-    )
-    def subscriptions(self, request):
-
-        user = request.user
-        users = Follow.objects.filter(user=user)
-        page = self.paginate_queryset(users)
-        serializer = FollowSerializer(
-            page,
-            many=True,
-            context={'request': request}
+    @action(detail=False,
+            methods=['GET'],
+            permission_classes=(IsAuthenticated,)
             )
+    def subscriptions(self, request, *args, **kwargs):
+        queryset = request.user.follower.all()
+        pages = self.paginate_queryset(queryset)
+        serializer = SubscriptionInfoSerializer(
+            pages, many=True, context={'request': request})
         return self.get_paginated_response(serializer.data)
-
-    @action(
-        detail=True,
-        methods=['post', 'delete'],
-        permission_classes=[AllowAny]
-    )
-    def subscribe(self, request, **kwargs):
-        user = request.user
-        author_id = self.kwargs.get('pk')
-        author = get_object_or_404(User, id=author_id)
-
-        if request.method == 'POST':
-            serializer = SubscribeSerializer(author,
-                                             data=request.data,
-                                             context={'request': request})
-            serializer.is_valid(raise_exception=True)
-            Follow.objects.create(user=user, author=author)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        if request.method == 'DELETE':
-            subscription = get_object_or_404(Follow,
-                                             user=user,
-                                             author=author)
-            subscription.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_serializer_class(self):
         if self.action in ('retrieve', 'list'):
             return UserSerializer
         return UserCreateSerializer
 
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+    @action(detail=True,
+            methods=['POST', 'DELETE'],
+            permission_classes=(IsAuthenticated,)
+            )
+    def subscribe(self, request, *args, **kwargs):
+        author = get_object_or_404(User, id=kwargs['pk'])
+        if request.method == 'POST':
+            data = request.data.copy()
+            data.update({'author': author.id})
+            serializer = SubscriptionSerializer(
+                data=data, context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(
+                status=status.HTTP_201_CREATED,
+                data=UserSerializer(author,
+                                    context={'request': request}).data
+                )
+        obj = request.user.follower.filter(author=author)
+        obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
-        methods=['get', 'patch'],
+        methods=['GET', 'PATCH'],
         permission_classes=[IsSelf]
     )
     def me(self, request):
@@ -132,6 +123,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
+    permission_classes = (IsAuthorOrReadOnly,)
 
     def get_serializer_class(self):
         if self.action in ('retrieve', 'list'):
@@ -168,7 +160,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         methods=('POST',),
         permission_classes=[IsAuthenticated])
     def favorite(self, request, pk):
-        context = {"request": request}
+        context = {'request': request}
         recipe = get_object_or_404(Recipe, id=pk)
         data = {
             'user': request.user.id,
@@ -188,7 +180,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(methods=('get',), detail=False)
+    @action(detail=False,
+            methods=('GET',),
+            permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
         final_list = {}
         ingredients = RecipeIngredients.objects.filter(
