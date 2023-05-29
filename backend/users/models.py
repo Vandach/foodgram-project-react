@@ -8,7 +8,10 @@ class User(AbstractUser):
     email = models.EmailField(
         'Email', max_length=254, unique=True, null=False, blank=False
     )
-    is_subscribed = models.BooleanField(default=False)
+    is_subscribed = models.BooleanField(
+        default=False,
+        verbose_name='Подписка'
+    )
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -34,5 +37,14 @@ class Follow(models.Model):
     )
 
     class Meta:
-        verbose_name_plural = 'Подписки'
         verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_follow'
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.user} подписан на {self.author}'

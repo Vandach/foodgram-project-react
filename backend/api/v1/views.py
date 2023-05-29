@@ -78,14 +78,17 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[IsSelf]
     )
     def me(self, request):
-        user = request.user
         if request.method == 'GET':
-            serializer = UserSerializer(user, context={'request': request})
+            serializer = UserSerializer(
+                request.user, context={'request': request}
+                )
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        serializer = self.get_serializer(user, data=request.data, partial=True)
+        serializer = self.get_serializer(
+            request.user, data=request.data, partial=True
+            )
         serializer.is_valid(raise_exception=True)
-        serializer.save(role=user.role, partial=True)
+        serializer.save(role=request.user.role, partial=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -103,10 +106,9 @@ class UpdatePassword(APIView):
         if serializer.is_valid():
             old_password = serializer.data.get('current_password')
             new_password = serializer.data.get('new_password')
-            checking_password = self.object.password
-            matchcheck = check_password(old_password, checking_password)
+            matchcheck = check_password(old_password, self.object.password)
 
-            if matchcheck is False and old_password != checking_password:
+            if matchcheck is False and old_password != self.object.password:
                 return Response({f'{old_password}': ['Wrong password.']},
                                 status=status.HTTP_400_BAD_REQUEST)
 
