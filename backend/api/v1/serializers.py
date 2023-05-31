@@ -51,8 +51,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate_password(self, value):
-        password = make_password(value)
-        return password
+        return make_password(value)
 
 
 class ChangePasswordSerializer(serializers.Serializer):
