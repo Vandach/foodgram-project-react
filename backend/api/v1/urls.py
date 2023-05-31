@@ -5,7 +5,6 @@ from .views import (UpdatePassword, UserViewSet,
                     IngredientViewSet, RecipeViewSet,
                     TagsViewSet)
 
-
 router = routers.SimpleRouter()
 router.register(r'users', UserViewSet)
 router.register(r'recipes', RecipeViewSet)

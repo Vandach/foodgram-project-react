@@ -11,9 +11,7 @@ services:
       - "5432:5432"
 
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: vandach/backend:v1
     volumes:
       - static_value:/app/static/
       - media_value:/app/media/
@@ -23,9 +21,7 @@ services:
       - db
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: vandach/frontend:v1
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
