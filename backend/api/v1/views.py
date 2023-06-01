@@ -16,15 +16,13 @@ from food.models import (Favorite, Ingredient, Recipe, RecipeIngredients,
                          ShoppingCart, Tag)
 from .permissions import IsSelf, IsAuthorOrReadOnly
 from .pagination import StandardResultsSetPagination
-
 from .serializers import (ChangePasswordSerializer, UserCreateSerializer,
                           UserSerializer, IngredientSerializer,
                           RecipeCreateSerializer,
                           RecipeSerializer, TagSerializer,
                           FavoriteSerializer, ShoppingCartSerializer,
                           SubscriptionSerializer,
-                          SubscriptionInfoSerializer
-                          )
+                          SubscriptionInfoSerializer)
 from .filters import IngredientFilter, RecipeFilter
 
 
