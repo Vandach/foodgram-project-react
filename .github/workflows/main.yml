@@ -87,7 +87,7 @@ jobs:
             cd foodgram
             sudo docker pull ${{ secrets.USER }}/backend:v1
             sudo docker pull ${{ secrets.USER }}/frontend:v1
-            sudo docker-compose stop
+            sudo docker-compose down
             sudo docker-compose rm backend
             sudo docker-compose rm frontend
             sudo rm .env
