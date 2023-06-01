@@ -1,4 +1,4 @@
-![This is an image](https://github.com/Vandach/foodgram-project-react/actions/workflows/yamdb_workflow.yml/badge.svg) 
+![This is an image](https://github.com/Vandach/foodgram-project-react/actions/workflows/main.yml/badge.svg) 
 
 ### Проект api_yamdb: 
 
