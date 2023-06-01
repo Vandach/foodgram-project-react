@@ -1,5 +1,19 @@
 ![This is an image](https://github.com/Vandach/foodgram-project-react/actions/workflows/main.yml/badge.svg) 
 
+Адрес сервера:
+http://51.250.107.146/
+
+Вход в админку:
+http://51.250.107.146/admin/
+
+Логин:
+admin
+
+Пароль:
+1234
+
+
+
 ### Проект Foodgram: 
 
  
