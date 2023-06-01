@@ -12,13 +12,11 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
 from users.models import User
+from api.v1.pagination import StandardResultsSetPagination
 from food.models import (Favorite, Ingredient, Recipe, RecipeIngredients,
                          ShoppingCart, Tag)
 
 from .permissions import IsSelf, IsAuthorOrReadOnly
-
-from .pagination import StandardResultsSetPagination
-
 from .serializers import (ChangePasswordSerializer, UserCreateSerializer,
                           UserSerializer, IngredientSerializer,
                           RecipeCreateSerializer,
