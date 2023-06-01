@@ -74,36 +74,36 @@ class Recipe(models.Model):
         related_name='recipes',
         on_delete=models.CASCADE,
         verbose_name='Автор',
-        )
+    )
     name = models.CharField(
         max_length=250,
         verbose_name='Название'
-        )
+    )
     text = models.TextField(verbose_name='Текст')
     image = models.ImageField(
         null=True,
         blank=True,
         upload_to='food/images/',
         verbose_name='Изображения',
-        )
+    )
     pub_date = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата публикации',
-        )
+    )
     ingredients = models.ManyToManyField(
         Ingredient,
         through='RecipeIngredients',
         verbose_name='Ингредиенты рецепта',
-        )
+    )
     tags = models.ManyToManyField(
         Tag,
         verbose_name='Тег',
-        )
+    )
     cooking_time = models.SmallIntegerField(
         verbose_name='Время приготовления',
         validators=[MinValueValidator(
             1, message='Рецепт не может готовиться меньше минуты.'
-            )
+        )
         ]
     )
     is_favorited = models.BooleanField(verbose_name='Избранный')

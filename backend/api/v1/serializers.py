@@ -182,7 +182,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     ingredients = RecipeIngredientsSerializer(
         many=True, source='amount'
-        )
+    )
     tags = TagSerializer(read_only=True, many=True)
     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
     is_favorited = serializers.SerializerMethodField(read_only=True)
@@ -239,7 +239,7 @@ class RecipeCreateSerializer(WritableNestedModelSerializer,
         if not ingredients:
             raise exceptions.ValidationError(
                 'Нужно добавить ингридиенты.'
-                )
+            )
         check = self.initial_data.get('ingredients')
         ingredients_check = [item['id'] for item in check]
         for ingredient in ingredients_check:
@@ -253,7 +253,7 @@ class RecipeCreateSerializer(WritableNestedModelSerializer,
         if not tags:
             raise exceptions.ValidationError(
                 'Нужно добавить тег.'
-                )
+            )
         return tags
 
     def add_ingredients_and_tags(self, tags, ingredients, recipe):
