@@ -245,7 +245,12 @@ class RecipeCreateSerializer(WritableNestedModelSerializer,
         for ingredient in ingredients_check:
             if ingredients_check.count(ingredient) > 1:
                 raise exceptions.ValidationError(
-                    'У рецепта не может быть два одинаковых ингридиента'
+                    'У рецепта не может быть два одинаковых ингридиента.'
+                )
+        for ingredient in ingredients:
+            if int(ingredient.get('amount')) < 1:
+                raise exceptions.ValidationError(
+                    'Количество ингредиента должно быть больше 0.'
                 )
         return ingredients
 

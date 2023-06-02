@@ -137,7 +137,10 @@ class RecipeIngredients(models.Model):
         related_name='amount',
         verbose_name='Ингредиент',
     )
-    amount = models.IntegerField(verbose_name='Количество')
+    amount = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1)],
+        verbose_name='Количество'
+    )
 
     class Meta:
         ordering = ['-id']
